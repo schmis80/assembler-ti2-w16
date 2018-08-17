@@ -6,7 +6,7 @@
 ; returns lenght of the collatz conjecture of n
 ;
 ; Stefan Schmid
-; 09/16/2018
+; 08/17/2018
 
 section .text
 
