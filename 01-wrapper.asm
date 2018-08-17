@@ -15,11 +15,11 @@
 
 section .data
     result_msg:         
-        db      "Result: %llu",10,0
+        db      "gauss(%llu) = %llu",10,0
     err_invalid_msg:    
         db      27,"[31;1m","Invalid character: %c",27,"[0m",10,0  
     err_not_enough_msg:
-        db      27,"[31;1mi","Not enough Arguments",27,"[0m",10,0
+        db      27,"[31;1m","Not enough Arguments",27,"[0m",10,0
 
 section .text
 
@@ -34,9 +34,11 @@ main:
     call    strtoul
     cmp     byte [rdi], 0       ;test if conversion was successfull
     jne     err_invalid
+    push    rsi
     mov     rdi, rsi
     call    gauss
-    mov     rsi, rax
+    pop     rsi
+    mov     rdx, rax
     mov     rdi, result_msg
     xor     rax, rax
     call    printf
