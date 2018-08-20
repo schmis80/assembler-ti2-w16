@@ -1,6 +1,7 @@
 ;************************************************
 ; 
-; TI2 WS16 - Assignment 2: Collatz
+; Rechnerarchitektur (TI2) - WS16
+; Assignment 2: collatz
 ;
 ; gets uint64_t n, 
 ; returns lenght of the collatz conjecture of n

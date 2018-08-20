@@ -1,6 +1,7 @@
 ;************************************************
 ; 
-; TI2 WS16 - Assignment 3:
+; Rechnerarchitektur (TI2) - WS16
+; Assignment 3: fib
 ;
 ; gets uint64_t n, 
 ; provides an iterative and a recursive function

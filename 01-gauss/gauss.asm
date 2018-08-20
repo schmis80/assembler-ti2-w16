@@ -1,6 +1,7 @@
 ;************************************************
 ; 
-; TI2 WS16 - Assignment 1:
+; Rechnerarchitektur (TI2) - WS16
+; Assignment 1: gauss
 ;
 ; gets uint64_t n, 
 ; returns sum from 1 to n

@@ -1,21 +1,22 @@
 ;************************************************
 ; 
-; TI2 WS16 - Gauss Wrapper:
+; Rechnerarchitektur (TI2) - WS16
+; Collatz Wrapper
 ;
-; Wrapper for Assignment 1:
+; Wrapper for Assignment 2:
 ;   gets number n passed as argument string,
 ;   converts n to unsigned integer,
-;   calls 'gauss'-function,
+;   calls 'collatz'-function,
 ;   prints result or error message
 ;
 ; Stefan Schmid
-; 08/16/2018
+; 08/17/2018
 
 
 
 section .data
     result_msg:         
-        db      "gauss(%llu) = %llu",10,0
+        db      "collatz(%u) = %llu",10,0
     err_invalid_msg:    
         db      27,"[31;1m","Invalid character: %c",27,"[0m",10,0  
     err_not_enough_msg:
@@ -23,7 +24,7 @@ section .data
 
 section .text
 
-extern strtoul, printf, gauss
+extern strtoul, printf, collatz
 global main
 
 main:
@@ -36,9 +37,9 @@ main:
     jne     err_invalid
     push    rsi
     mov     rdi, rsi
-    call    gauss
-    pop     rsi
+    call    collatz
     mov     rdx, rax
+    pop     rsi
     mov     rdi, result_msg
     xor     rax, rax
     call    printf
