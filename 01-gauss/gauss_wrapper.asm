@@ -32,10 +32,10 @@ main:
     jb      err_not_enough
     mov     rdi, [rsi+8]        ;get passed argument
     mov     rdx, 10             ;base to convert to
-    call    strtoul
+    call    strtoul             ;result in rax and rsi, endptr in rdi 
     cmp     byte [rdi], 0       ;test if conversion was successfull
     jne     err_invalid
-    push    rsi
+    push    rsi                 ;save result for later use in printf
     mov     rdi, rsi
     call    gauss
     pop     rsi
