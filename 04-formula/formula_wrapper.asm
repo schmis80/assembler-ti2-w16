@@ -4,8 +4,8 @@
 ; formula Wrapper
 ;
 ; Wrapper for Assignment 4:
-;   gets number n passed as argument string,
-;   converts n to unsigned integer,
+;   gets passed eight argument strings,
+;   converts them to int32_t,
 ;   calls 'formula'-function,
 ;   prints result or error message
 ;
@@ -53,7 +53,7 @@ conversion:
     mov     r9d,  [vals+20]
     mov     r10d, [vals+24]
     mov     r11d, [vals+28]
-    enter   24, 0
+    enter   16, 0           ;open stack frame for 7th and 8th parameter
     mov     [rsp], r10
     mov     [rsp+8], r11
     xor     r10, r10
