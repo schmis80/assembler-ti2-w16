@@ -3,9 +3,9 @@
 ; Rechnerarchitektur (TI2) - WS16
 ; formula Wrapper
 ;
-; Wrapper for Assignment 4:
+; Wrapper for Assignment 5:
 ;   gets passed eight argument strings,
-;   converts them to int32_t,
+;   converts them to double,
 ;   calls 'formula'-function,
 ;   prints result or error message
 ;
@@ -13,14 +13,14 @@
 ; 08/21/2018
 
 section .bss
-    a:          rest    1
-    b:          rest    1
-    c:          rest    1
-    d:          rest    1
-    e:          rest    1
-    f:          rest    1
-    g:          rest    1
-    h:          rest    1
+    a:          reso    1
+    b:          reso    1
+    c:          reso    1
+    d:          reso    1
+    e:          reso    1
+    f:          reso    1
+    g:          reso    1
+    h:          reso    1
     end_ptr:    resq    1
 
 section .data
@@ -49,12 +49,11 @@ conversion:
     mov     rdi, [end_ptr]
     cmp     byte [rdi], 0
     jne     err_invalid
-    lea     rsi, [r13*4+r13]
-    movsd   [a+rsi*2-10], xmm0
+    lea     rsi, [r13*8]
+    movsd   [a+rsi*2-16], xmm0
     inc     r13
     cmp     r13, 8
     jbe     conversion
-    mov     rsi, 16
     movsd   xmm0, [a]
     movsd   xmm1, [b]
     movsd   xmm2, [c]
