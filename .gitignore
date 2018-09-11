@@ -2,3 +2,4 @@
 a.out
 *.swp
 *.c
+.gdb_history
