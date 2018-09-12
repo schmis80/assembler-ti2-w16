@@ -73,20 +73,24 @@ main:
     cmp     rdi, 3
     jb      err_not_enough
     mov     r12, rsi
+    mov     r13, 1      ;counter for arguments
 ;   convert first argument
     mov     rdi, [r12+8]
     mov     rsi, end_ptr
     call    strtof
-    mov     rdi, [end_ptr]
-    cmp     byte [rdi], 0
+;   strtof stores the address of the char,
+;   where the conversion failed, to r9.
+;   if it was successful r9 is set to 0
+;
+    cmp     r9, 0
     jne     err_invalid
     movsd   [op1], xmm0
 ;   convert second argument
+    inc     r13
     mov     rdi, [r12+16]
     mov     rsi, end_ptr
     call    strtof
-    mov     rdi, [end_ptr]
-    cmp     byte [rdi], 0
+    cmp     r9, 0
     jne     err_invalid
     movsd   [op2], xmm0
 
@@ -118,7 +122,7 @@ err_not_enough:
     jmp     print_error
 
 err_invalid:
-    mov     rsi, [r12+r13*8]    ;char that made conversion fail
+    mov     rsi, [r12+r13*8]    ;address of string that could not be converted
     mov     rdi, err_invalid_msg
 
 print_error:
