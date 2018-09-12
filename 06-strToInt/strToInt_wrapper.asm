@@ -10,7 +10,7 @@
 ;   prints result or error message
 ;
 ; Stefan Schmid
-; 08/21/2018
+; 2018/08/21
 
 section .bss
     end_ptr:    resq    1

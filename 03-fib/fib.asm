@@ -5,11 +5,11 @@
 ;
 ; gets uint64_t n, 
 ; provides an iterative and a recursive function
-; to calclate the n-th member of the
+; to caluclate the n-th member of the
 ; fibonacci sequence 
 ;
 ; Stefan Schmid
-; 08/17/2018
+; 2018/08/17
 
 section .text
 

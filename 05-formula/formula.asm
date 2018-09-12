@@ -8,7 +8,7 @@
 ; Return: (a+b)*(c-d)*(e*8 + f*4 − g/2 + h/4)/3
 ;
 ; Stefan Schmid
-; 08/21/2018
+; 2018/08/21
 
 section .data
     two:    dq  2.

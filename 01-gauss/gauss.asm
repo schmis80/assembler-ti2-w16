@@ -7,7 +7,7 @@
 ; returns sum from 1 to n
 ;
 ; Stefan Schmid
-; 08/16/2018
+; 2018/08/16
 
 section .text
 

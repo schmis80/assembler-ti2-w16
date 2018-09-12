@@ -10,7 +10,7 @@
 ;   prints result or error messages
 ;
 ; Stefan Schmid
-; 08/21/2018
+; 2018/09/12
 
 section .bss
     result:     resd    1

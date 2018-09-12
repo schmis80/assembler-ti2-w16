@@ -10,7 +10,7 @@
 ;   prints result or error message
 ;
 ; Stefan Schmid
-; 08/16/2018
+; 2018/08/16
 
 
 

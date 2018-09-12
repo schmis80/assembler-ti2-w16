@@ -10,7 +10,7 @@
 ; Return: converted int64_t value of str
 ;
 ; Stefan Schmid
-; 08/18/2018
+; 2018/08/18
 
 section .data
     base_str:   db  0,0,0,0     ;buffer for invalid base
