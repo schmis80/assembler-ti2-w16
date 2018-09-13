@@ -398,30 +398,3 @@ end_loop:
 exit:   
     mov     rax, 60
     syscall    
-
-;	int64_t res = fold(func, len, a, 1);
-;	// Ausgabe fold
-;        printf("=%"PRId64"\n\nfold-ltr:\n", res);
-;        res = fold(func, len, a, 0);
-;	for(size_t i=2; i<len; i++) {
-;		printf("(");
-;	}
-;	for(size_t i=0; i<len; i++) {
-;		printf("%"PRId64, a[i]);
-;		if(i < len-1) {
-;			if(i > 0) {
-;				printf(")");
-;			}
-;			printf("%c", argv[2][0]);
-;		}
-;	}
-;	printf("=%"PRId64"\n\nzipWith:\n", res);
-;
-;	zipWith(func, len, a, b, c);
-;	// Ausgabe zipWith
-;	for(size_t i=0; i<len; i++) {
-;		printf("%"PRId64"%c%"PRId64"=%"PRId64"\n", a[i], argv[2][0], b[i], c[i]);
-;	}
-;
-;	return EXIT_SUCCESS;
-;}
