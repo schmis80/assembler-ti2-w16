@@ -21,12 +21,22 @@ section .data
             42, "-" , 42, ", ",\
             42, "\*", 42, ", ",\
             " as operation.",10,0
-    right_to_left_msg:
-        db  "fold right to left",10,0
+    rtl_msg:
+        db  "fold-rtl:",10,0
+    ltr_msg:
+        db  10,"fold-ltr:",10,0
     entry_op_msg:
-        db  "%dll%c%c",0
-    result_msg:
-        db  "Result: %lld",10,0
+        db  "%lld%c%c",0
+    rtl_p:
+        db  ")",0
+    ltr_p:
+        db  "(",0
+    fold_res:
+        db  "=%3lld",10,0
+    zip_msg:
+        db  10,"zipWith:",10,0
+    zip_op_msg:
+        db  "%3lld %c %3lld = %3lld",10,0
     
     
 
@@ -56,57 +66,190 @@ division:
     div     rsi
     ret
 
-;print_right_to_left:
-;    push    r12
-;    push    r13
-;    push    r14
-;    push    r15
-;;	printf("fold-rtl:\n");
-;;	for(size_t i=0; i<len; i++) {
-;;		if(i == len-1) {
-;;			printf("%"PRId64, a[i]);
-;;		} else {
-;;			printf("%"PRId64"%c", a[i], argv[2][0]);
-;;		}
-;;		if(i < len -2) {
-;;			printf("(");
-;;		}
-;;	}
-;;	for(size_t i=2; i<len; i++) {
-;;		printf(")");
-;;	}
-;;
-;    mov     r12, rdi
-;    mov     r13, rsi
-;    mov     r14, rdx
-;    mov     rdi, right_to_left_msg
-;    xor     rax, rax
-;    call    printf
-;    mov     r15, r13
-;print_loop:
-;    cmp     r13, 0
-;    je      close_parentheses
-;    dec     r13
-;    mov     rsi, 0
-;    cmp     r13, 0
-;    je      print
-;    dec     r13
-;    mov     rsi, r14
-;    mov     rdx, 0
-;    cmp     r13, 0
-;    je      print
-;    mov     rdx, '('
-;print:
-;    mov     rdi, entry_op_msg
-;    xor     rax, rax
-;    call    printf
-;    inc     r13
-;    jmp     print_loop
-;close_parentheses:
+rtl_print:
+;   uint64_t a[len], uint64_t len, int64_t res, char op
+;   prints the array like this:
+;       1+(2+(3+4))=10
+;
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+    push    rbx
+
+    mov     r12, rdi
+    mov     r13, rsi
+    mov     r14, rdx
+    mov     rbx, rcx
+    xor     r15, r15
+
+    mov     rdi, rtl_msg
+    xor     rax, rax
+    call    printf
+.loop:
+    cmp     r15, r13
+    je      .end_loop
+
+    lea     r8, [r13-1]
+    xor     rdx, rdx
+    xor     rcx, rcx
+    cmp     r15, r8
+    je      .print
+
+    lea     r8, [r13-2]
+    mov     rdx, rbx
+    mov     rcx, '('
+    cmp     r15, r8
+    jb      .print
+
+    xor     rcx, rcx
     
+.print:
+    mov     rdi, entry_op_msg
+    mov     rsi, [r12+8*r15]
+    xor     rax, rax
+    call    printf
+    inc     r15
+    jmp     .loop
+
+.end_loop:
+    sub     r13, 2
+    xor     r15, r15
+.p_loop:
+    cmp     r15, r13
+    jae     .end_p_loop
+    mov     rdi, rtl_p
+    xor     rax, rax
+    call    printf
+    inc     r15
+    jmp     .p_loop
+
+.end_p_loop:
+    mov     rdi, fold_res
+    mov     rsi, r14
+    xor     rax, rax
+    call    printf
+
+    pop     rbx
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    ret
+
+ltr_print:
+;   uint64_t a[len], uint64_t len, int64_t res, char op
+;   prints the array like this:
+;       1+(2+(3+4))=10
+;
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+    push    rbx
+
+    mov     r12, rdi
+    mov     r13, rsi
+    mov     r14, rdx
+    mov     rbx, rcx
+
+    mov     rdi, ltr_msg
+    xor     rax, rax
+    call    printf
+    sub     r13, 2
+    xor     r15, r15
+.p_loop:
+    cmp     r15, r13
+    jae     .end_p_loop
+    mov     rdi, ltr_p
+    xor     rax, rax
+    call    printf
+    inc     r15
+    jmp     .p_loop
+
+.end_p_loop:
+    add     r13, 2
+    xor     r15, r15
+.loop:
+    cmp     r15, r13
+    je      .end_loop
+
+    lea     r8, [r13-1]
+    xor     rdx, rdx
+    xor     rcx, rcx
+    cmp     r15, r8
+    je      .print
+
+    mov     rdx, ')'
+    mov     rcx, rbx
+    cmp     r15, 0
+    ja      .print
+
+    mov     rdx, rbx
+    xor     rcx, rcx
     
-    
-    
+.print:
+    mov     rdi, entry_op_msg
+    mov     rsi, [r12+8*r15]
+    xor     rax, rax
+    call    printf
+    inc     r15
+    jmp     .loop
+
+.end_loop:
+    mov     rdi, fold_res
+    mov     rsi, r14
+    xor     rax, rax
+    call    printf
+
+    pop     rbx
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    ret
+
+zip_print:
+;   uint64_t a[len], uint64_t len, char op
+;   prints our three arrays like this:
+;       1 + 3 = 4
+;       2 + 4 = 6
+;      
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+
+    mov     r12, rdi
+    mov     r13, rsi
+    mov     r14, rdx
+    xor     r15, r15
+
+    mov     rdi, zip_msg
+    xor     rax, rax
+    call    printf
+
+.loop:
+    cmp     r15, r13
+    je      .end_loop
+    mov     rdi, zip_op_msg
+    mov     rsi, [r12+8*r15]
+    mov     rdx, r14
+    lea     r9, [r12+8*r15]
+    mov     rcx, [r9+8*r13]
+    lea     r9, [r9+8*r13]
+    mov     r8, [r9+8*r13]
+    xor     rax, rax
+    call    printf
+    inc     r15
+    jmp     .loop
+
+.end_loop:
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    ret
 
 ;   1. Param length of arrays
 ;   2. Param operation
@@ -176,15 +319,15 @@ valid_operation:
     mov     rdi, rax
     call    srand
 
-    lea     rdi, [2*r13+r13]
-    lea     rdi, [8*rdi]
+    lea     rbx, [2*r13+r13]
+    lea     rdi, [8*rbx]
 ;   enter stackframe with 3*8*lenght bytes
     push    rbp
     mov     rbp, rsp
     sub     rsp, rdi
     xor     r15, r15
 fill_loop:
-    cmp     r15, r13
+    cmp     r15, rbx
     je      end_loop
     call    rand
     xor     rdx, rdx
@@ -193,6 +336,7 @@ fill_loop:
     mov     [rsp+8*r15], rdx
     inc     r15
     jmp     fill_loop
+
 end_loop:
 ;   call fold_right_to_left
     mov     rdi, r14
@@ -200,26 +344,40 @@ end_loop:
     mov     rdx, rsp
     mov     rcx, 1
     call    fold
-;   mov     rdi, rsp
-;   mov     rsi, r13
-;   lea     rdx, [r12+16]
-;   mov     rdx, [rdx]
-;   mov     rcx, 1
-;   call    print_right_to_left
-    mov     rdi, result_msg
-    mov     rsi, rax    
-    xor     rax, rax
-    call    printf
+    mov     rdi, rsp
+    mov     rsi, r13
+    mov     rdx, rax
+    mov     r8, [r12+16] 
+    xor     rcx, rcx
+    mov     cl, [r8]  
+    call    rtl_print
+;   call fold_left_to_right
     mov     rdi, r14
     mov     rsi, r13
     mov     rdx, rsp
     xor     rcx, rcx
     call    fold
-    mov     rdi, result_msg
-    mov     rsi, rax
-    xor     rax, rax
-    call    printf
+    mov     rdi, rsp
+    mov     rsi, r13
+    mov     rdx, rax
+    mov     r8, [r12+16] 
+    xor     rcx, rcx
+    mov     cl, [r8]  
+    call    ltr_print
+    mov     rdi, r14
+    mov     rsi, r13
+    mov     rdx, rsp
+    lea     rcx, [rsp+8*r13]
+    lea     r8, [rcx+8*r13]
+    call    zipWith
+    mov     rdi, rsp
+    mov     rsi, r13
+    mov     r8, [r12+16] 
+    xor     rdx, rdx
+    mov     dl, [r8]  
+    call    zip_print
     xor     rdi, rdi
+;   leave stackframe
     mov     rsp, rbp
     pop     rbp
 exit:   
