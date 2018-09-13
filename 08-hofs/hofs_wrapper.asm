@@ -1,3 +1,18 @@
+;************************************************
+; 
+; Rechnerarchitektur (TI2) - WS16
+;
+; Wrapper for Assignment 8:
+;   gets passed two argument strings,
+;   converts first to int64_t, checks if second
+;   one is one either "+", "-", "*", or "/"
+;   calls the higher-order-functions
+;   fold (right to left), fold (left to right),
+;   and zipWith. And prints their results
+;
+; Stefan Schmid
+; 2018/09/13
+
 %define RED		27,"[31m"
 %define DEFAULT 27,"[39m"
 
