@@ -3,9 +3,6 @@
 ; Rechnerarchitektur (TI2) - WS16
 ; Assignment 8: fold / zipWith
 ;
-; fold
-; -----------------------------------------------
-;
 ; Stefan Schmid
 ; 2018/09/13
 
