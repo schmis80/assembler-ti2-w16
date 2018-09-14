@@ -25,8 +25,7 @@ even:
     shr     rdi, 1
     jmp loop
 odd:
-    lea     rdi, [rdi*2+rdi]
-    inc     rdi
+    lea     rdi, [rdi*2+rdi+1]
     jmp loop
 
 return:
