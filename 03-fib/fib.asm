@@ -16,15 +16,12 @@ section .text
 global asm_fib_it, asm_fib_rek
 
 asm_fib_it:               
-    xor     rcx, rcx
-    mov     rdx, 1
     xor     rax, rax
+    mov     rdx, 1
 loop:
     cmp     rdi, 0
     jbe     return
-    mov     rcx, rdx
-    mov     rdx, rax
-    lea     rax, [rcx+rdx]
+    xadd    rax, rdx
     dec     rdi
     jmp     loop
 
