@@ -31,15 +31,14 @@ section .data
         db  BOLD,RED,"Not enough arguments!",10,RESET,\
             "Usage: ./hofs <len> <op>",10,0
     invalid_argument_msg:
-        db  BOLD,RED,"Invalid argument: ",42,"%s",42,"!",10,RESET,0
+        db  BOLD,RED,"Invalid argument: ",34,"%s",34,"!",10,RESET,0
     only_digits_msg:        
         db  "Only Digits are allowed!",10,0
     allowed_operations_msg:
         db  "Please insert only ",\
-            42, "+" , 42, ", ",\
-            42, "-" , 42, ", ",\
-            42, "\*", 42, ", ",\
-            " as operation.",10,0
+            34, "+" , 34, ", ",\
+            34, "-" , 34, ", ",\
+            34, "\*", 34, " as operation.",10,0
     result_msg:
         db  "%2d: %9f %c %9f = %9f",10,0
     
@@ -71,31 +70,6 @@ rand_float:
     mulss   xmm0, [edge]
     ret
 
-float2double:
-;   prepare three registers
-    xor     rdi, rdi
-    xor     rsi, rsi
-    xor     rdx, rdx
-    movd    edi, xmm0
-    mov     esi, edi
-    mov     edx, edi
-;   convert sign
-    and     edi, 1 << 31    ;isolate sign
-    shl     rdi, 32         ;position sign
-;   convert exponent       
-    shr     rsi, 23
-    and     rsi, 0xff       ;isolate exponent
-    add     rsi, 896        ;adjust offset from 127 to 1023
-    shl     rsi, 52         ;position exponent
-;   convert mantissa
-    and     edx, 0x7fffff   ;isolate mantissa
-    shl     rdx, 29         ;position mantissa
-;   combine sign, exponent, and mantissa
-    or      rdi, rsi
-    or      rdi, rdx
-    movq    xmm0, rdi
-    ret
-
 print_result:
 ;   uint64_t a[len], uint64_t len, char op
 ;   prints our three arrays like this:
@@ -116,17 +90,13 @@ print_result:
     cmp     r15, qword [given_len]
     je      .end_loop
     movd    xmm0, [r12+4*r15]
-    call    float2double
-    movsd   xmm3, xmm0
+    cvtss2sd xmm0, xmm0
     lea     r9, [r12+4*r15]
-    movd    xmm0, [r9+4*r13]
-    call    float2double
-    movsd   xmm1, xmm0
+    movd    xmm1, [r9+4*r13]
+    cvtss2sd xmm1, xmm1
     lea     r9, [r9+4*r13]
-    movd    xmm0, [r9+4*r13]
-    call    float2double
-    movsd   xmm2, xmm0
-    movsd   xmm0, xmm3
+    movd    xmm2, [r9+4*r13]
+    cvtss2sd xmm2, xmm2
     mov     rdi, result_msg
     mov     rsi, r15
     mov     rdx, r14
@@ -163,7 +133,8 @@ enough_arguments:
     mov     rsi, end_ptr
     mov     rdx, 10
     call    strtoull
-    cmp     byte [rdi], 0
+    mov     rsi, [end_ptr]
+    cmp     byte [rsi], 0
     je      conversion_successful
 
 ;   print error message, if invalid argument was given
