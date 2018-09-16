@@ -31,43 +31,6 @@ section .text
 extern strtof, printf, calc_add, calc_sub
 global main
 
-float2double:
-;   prepare three registers
-    xor     rdi, rdi
-    xor     rsi, rsi
-    xor     rdx, rdx
-    movd    edi, xmm0
-    mov     esi, edi
-    mov     edx, edi    
-;   convert sign
-    and     edi, 1 << 31    ;isolate sign
-    shl     rdi, 32         ;position sign
-;   convert exponent       
-    shr     rsi, 23     
-    and     rsi, 0xff       ;isolate exponent
-    add     rsi, 896        ;adjust offset from 127 to 1023
-    shl     rsi, 52         ;position exponent
-;   convert mantissa
-    and     edx, 0x7fffff   ;isolate mantissa
-    shl     rdx, 29         ;position mantissa
-;   combine sign, exponent, and mantissa
-    or      rdi, rsi
-    or      rdi, rdx
-    movq    xmm0, rdi
-    ret
-
-convert_result:
-    call    float2double
-    movsd   xmm3, xmm0
-    movsd   xmm0, xmm1
-    call    float2double
-    movsd   xmm1, xmm0
-    movsd   xmm0, [r12]
-    call    float2double
-    movsd   xmm2, xmm0
-    movsd   xmm0, xmm3
-    ret
-
 main:
     sub     rsp, 8
     cmp     rdi, 3
@@ -99,7 +62,10 @@ main:
     mov     rdi, result
     call    calc_add
     mov     r12, result
-    call    convert_result
+    cvtss2sd xmm0, xmm0
+    cvtss2sd xmm1, xmm1
+    movsd   xmm2, [r12]
+    cvtss2sd xmm2, xmm2
     mov     rdi, result_msg
     mov     rsi, '+'
     mov     rax, 2
@@ -109,7 +75,10 @@ main:
     mov     rdi, result
     call    calc_sub
     mov     r12, result
-    call    convert_result
+    cvtss2sd xmm0, xmm0
+    cvtss2sd xmm1, xmm1
+    movsd   xmm2, [r12]
+    cvtss2sd xmm2, xmm2
     mov     rdi, result_msg
     mov     rsi, '-'
     mov     rax, 2
