@@ -13,14 +13,6 @@
 ; 2018/08/21
 
 section .bss
-    a:          reso    1
-    b:          reso    1
-    c:          reso    1
-    d:          reso    1
-    e:          reso    1
-    f:          reso    1
-    g:          reso    1
-    h:          reso    1
     end_ptr:    resq    1
 
 section .data
@@ -42,30 +34,35 @@ main:
     jb      err_not_enough
     mov     r12, rsi
     mov     r13, 1      ;counter vor arguments
+    enter   8*16,0
 conversion:
     mov     rdi, [r12+r13*8]
     mov     rsi, end_ptr
-    call    strtod
-    mov     rdi, [end_ptr]
+    mov     rax, strtod
+    call    rax
+    mov     rdi, end_ptr
+    mov     rdi, [rdi]
     cmp     byte [rdi], 0
     jne     err_invalid
     lea     rsi, [r13*8]
-    movsd   [a+rsi*2-16], xmm0
+    movsd   [rsp+rsi*2-16], xmm0
     inc     r13
     cmp     r13, 8
     jbe     conversion
-    movsd   xmm0, [a]
-    movsd   xmm1, [b]
-    movsd   xmm2, [c]
-    movsd   xmm3, [d]
-    movsd   xmm4, [e]
-    movsd   xmm5, [f]
-    movsd   xmm6, [g]
-    movsd   xmm7, [h]
+    movsd   xmm0, [rsp]
+    movsd   xmm1, [rsp+16]
+    movsd   xmm2, [rsp+32]
+    movsd   xmm3, [rsp+48]
+    movsd   xmm4, [rsp+64]
+    movsd   xmm5, [rsp+80]
+    movsd   xmm6, [rsp+96]
+    movsd   xmm7, [rsp+112]
+    leave
     call    formula
     mov     rdi, result_msg
     mov     rax, 2
-    call    printf
+    mov     rcx, printf
+    call    rcx
     xor     rdi, rdi            ;program was successful
     jmp     exit
     
@@ -79,7 +76,8 @@ err_invalid:
 
 print_error:
     xor     rax, rax
-    call    printf
+    mov     rcx, printf
+    call    rcx
     mov     rdi, 1              ;program was not successful
 
 exit:
