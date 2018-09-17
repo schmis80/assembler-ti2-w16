@@ -12,42 +12,26 @@
 ; Stefan Schmid
 ; 2018/09/11
 
-section .bss
-    sign1:  resb    1
-    exp1:   resb    1
-    mant1:  resd    1
-
-    sign2:  resb    1
-    exp2:   resb    1
-    mant2:  resd    1
-
 section .text
 global calc_add
 global calc_sub
 
 calc_sub:
     ;swap sign of op2, because op1-op2 = op1 + (-op2)
-    movd    ecx, xmm1
-    xor     ecx, 1<<31
+    movd    eax, xmm1
+    xor     eax, 1<<31
     jmp     from_sub
 
 calc_add:
-    movd    ecx, xmm1       ;get op2
+    movd    eax, xmm1       ;get op2
 from_sub:
-    mov     rsi, sign2
     call split_ieee
+    mov     r9b, dl    
+    mov     r10b, r8b
+    mov     ecx, eax
 
-    movd    ecx, xmm0       ;get op1
-    mov     rsi, sign1
+    movd    eax, xmm0       ;get op1
     call    split_ieee
-
-    mov     r9b, [sign2]    
-    mov     r10b, [exp2]
-    mov     ecx, [mant2]
-
-    mov     dl, [sign1]
-    mov     r8b, [exp1]
-    mov     eax, [mant1]
 
 ;   Adjust exponents
     cmp     r8d, r10d
@@ -109,16 +93,13 @@ cont2:
 
 split_ieee:
 ;   get sign
-    mov     r9d, ecx
-    shr     r9d, 31
-    mov     [rsi], r9b
+    mov     edx, eax
+    shr     edx, 31
 ;   get exponent
-    mov     r9d, ecx
-    shr     r9d, 23
-    and     r9d, 0xff
-    mov     [rsi+1], r9b
+    mov     r8d, eax
+    shr     r8d, 23
+    and     r8d, 0xff
 ;   get mantissa
-    and     ecx, 0x7fffff
-    add     ecx, 1<<23      ;add implicit 1 to mantissa
-    mov     [rsi+2], ecx
+    and     eax, 0x7fffff
+    add     eax, 1<<23      ;add implicit 1 to mantissa
     ret
