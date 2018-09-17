@@ -12,15 +12,24 @@
 ; Stefan Schmid
 ; 2018/08/17
 
+%define RED     27,"[31;1m" 
+%define RESET   27,"[0m"
+
+section .bss
+
+end_ptr:    resq    1
 
 
 section .data
-    result_msg:         
-        db      "collatz(%u) = %llu",10,0
-    err_invalid_msg:    
-        db      27,"[31;1m","Invalid character: %c",27,"[0m",10,0  
-    err_not_enough_msg:
-        db      27,"[31;1m","Not enough Arguments",27,"[0m",10,0
+
+result_msg:         
+    db      "collatz(%u) = %llu",10,0
+err_invalid_msg:    
+    db      RED,"Invalid argument: ",RESET,"%s",10,\
+            "Only digits are allowed!",10,0
+err_not_enough_msg:
+    db      RED,"Not enough Arguments",10,RESET,\
+            "Usage: ./gauss <number>",10,0
 
 section .text
 
@@ -28,21 +37,27 @@ extern strtoul, printf, collatz
 global main
 
 main:
+    mov     r12, rsi
     cmp     rdi, 2
     jb      err_not_enough
-    mov     rdi, [rsi+8]        ;get passed argument
+    mov     rdi, [r12+8]        ;get passed argument
+    mov     rsi, end_ptr
     mov     rdx, 10             ;base to convert to
-    call    strtoul
+    mov     rax, strtoul
+    call    rax
+    mov     rdi, end_ptr
+    mov     rdi, [rdi]
     cmp     byte [rdi], 0       ;test if conversion was successfull
     jne     err_invalid
-    push    rsi
-    mov     rdi, rsi
+    push    rax
+    mov     rdi, rax
     call    collatz
-    mov     rdx, rax
-    pop     rsi
     mov     rdi, result_msg
+    pop     rsi
+    mov     rdx, rax
     xor     rax, rax
-    call    printf
+    mov     rcx, printf
+    call    rcx
     xor     rdi, rdi            ;program was successful
     jmp     exit
     
@@ -51,12 +66,13 @@ err_not_enough:
     jmp     print_error
 
 err_invalid:
-    mov     rsi, [rdi]          ;char that made conversion fail
     mov     rdi, err_invalid_msg
+    mov     rsi, [r12+8]        ;invalid argument
 
 print_error:
     xor     rax, rax
-    call    printf
+    mov     rcx, printf
+    call    rcx
     mov     rdi, 1              ;program was not successful
 
 exit:
