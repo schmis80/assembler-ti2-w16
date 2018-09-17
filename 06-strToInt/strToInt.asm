@@ -12,9 +12,6 @@
 ; Stefan Schmid
 ; 2018/08/18
 
-section .data
-    base_str:   db  0,0,0,0     ;buffer for invalid base
-
 section .text
 
 global strToInt
@@ -56,7 +53,7 @@ strToInt:
 correctly_signed:
     and     rdx, 0xFF   ;make sure only lowest byte is filled
     cmp     dl, 36      ;valid base?
-    ja      invalid_base
+    ja      invalid_base 
     mov     r9, rdx
     xor     rax, rax    ;accumulator for result
     xor     r8, r8      ;will be used in char conversion
@@ -78,30 +75,5 @@ end_conversion:
     ret
 
 invalid_base:
-    call    intToStr
-    mov     r8, [rbp-0x40]          ;get address of argv
-    mov     qword [r8+8], base_str  ;replace argv[1] with base_str
     mov     [rsi], rdi
-    ret
-
-
-intToStr:
-    mov     rax, rdx    ;int to convert
-    mov     r10, 10     ;base for conversion
-    xor     r8, r8      ;counts number of digits
-.conversion:
-    xor     rdx, rdx    ;prepare for div
-    div     r10
-    add     rdx, 0x30   ;convert remainder to char
-    push    rdx   
-    inc     r8
-    cmp     rax, 0      ;check if last digit was converted
-    jne     .conversion
-    xor     rcx, rcx    ;counts number of written digits
-.write:
-    pop     rdx
-    mov     [base_str+rcx], dl
-    inc     rcx
-    cmp     rcx, r8     ;check if all digits were written to the string
-    jb      .write
     ret
