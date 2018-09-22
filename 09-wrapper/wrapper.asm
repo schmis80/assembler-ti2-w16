@@ -42,6 +42,7 @@ main:
 
     cmp     rdi, 2
     je      enough_arguments
+;   print error message if not enough arguments
     mov     rdi, not_enough_arguments_msg
     xor     rax, rax
     call    printf
