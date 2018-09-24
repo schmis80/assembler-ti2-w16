@@ -19,6 +19,13 @@
 %define BOLD    27,"[1m"
 %define RESET   27,"[0m"
 
+%macro mycall 1
+    push    r15
+    mov     r15, %1
+    call    r15
+    pop     r15
+%endmacro
+
 section .data
 not_enough_arguments_msg:
     db  RED , BOLD, "Not enough arguments!", 10, RESET,\
@@ -45,22 +52,22 @@ main:
 ;   print error message if not enough arguments
     mov     rdi, not_enough_arguments_msg
     xor     rax, rax
-    call    printf
+    mycall  printf
     mov     rax, 1
     jmp     exit
 
 enough_arguments:
 	mov     rdi, [rsi+8]    ;get argument
 	mov     rdx, 10
-	call    strtoul         ;convert argument to integer
+	mycall  strtoul         ;convert argument to integer
 	mov     r13, rax        ;len
 	lea     r12, [r13*8]
 	
 array:
     mov     rdi, 0
-    call    time
+    mycall  time
     mov     rdi, rax
-    call    srand
+    mycall  srand
 
 	push    rbp             ;enter stackframe
 	mov     rbp, rsp
@@ -70,7 +77,7 @@ array:
 .loop:
 	cmp     r12, r13
 	je      .end_loop
-	call    rand
+	mycall  rand
     xor     rdx, rdx
     div     r14
 	mov     [rsp+r12*8], rdx	
@@ -102,7 +109,7 @@ printArray:
 	mov     rdi, head_msg
 	mov     rsi, [r14]
 	xor     rax, rax
-	call    printf			;print head of array
+	mycall  printf			;print head of array
 	mov     r12, 1
 .loop:						;print inner elements of array
 	cmp     r12, r13
@@ -116,7 +123,7 @@ printArray:
 	mov     rdi, elem_msg
 	mov     rsi, [r14+r12*8]
 	mov     rax, 0
-	call    printf	
+	mycall  printf	
     inc     r12
 	jmp     .loop
 .end_loop:
