@@ -18,6 +18,27 @@
 %define BOLD	27,"[1m"
 %define RESET	27,"[0m"
 
+%macro mov_to 2
+    push    r15
+    mov     r15, %1
+    mov     [r15], %2
+    pop     r15
+%endmacro
+
+%macro mov_from 2
+    push    r15
+    mov     r15, %2
+    mov     %1, [r15]
+    pop     r15
+%endmacro
+
+%macro mycall 1
+    push    r15
+    mov     r15, %1
+    call    r15
+    pop     r15
+%endmacro
+
 section .bss
     end_ptr:    resq    1
     given_len:  resq    1
@@ -48,15 +69,15 @@ extern calc, time, printf, strtoull
 global main
 
 srand:
-    mov     [rand_next], rdi
+    mov_to  rand_next, rdi
     ret
 
 rand_float:
-    mov     rax, [rand_next]
+    mov_from rax, rand_next
     mov     rcx, 1103515245
     mul     rcx
     add     rax, 12345
-    mov     [rand_next], rax
+    mov_to  rand_next, rax
     mov     rcx, 65536
     xor     rdx, rdx
     div     rcx
@@ -67,7 +88,8 @@ rand_float:
     cvtsi2ss xmm0, rdx
     cvtsi2ss xmm1, rcx
     divss   xmm0, xmm1
-    mulss   xmm0, [edge]
+    mov     rcx, edge
+    mulss   xmm0, [rcx]
     ret
 
 print_result:
@@ -87,7 +109,8 @@ print_result:
     xor     r15, r15
 
 .loop:
-    cmp     r15, qword [given_len]
+    mov     rcx, given_len
+    cmp     r15, qword [rcx]
     je      .end_loop
     movd    xmm0, [r12+4*r15]
     cvtss2sd xmm0, xmm0
@@ -101,9 +124,7 @@ print_result:
     mov     rsi, r15
     mov     rdx, r14
     mov     rax, 2
-    sub     rsp, 8
-    call    printf
-    add     rsp, 8
+    mycall  printf
     inc     r15
     jmp     .loop
 
@@ -123,7 +144,7 @@ main:
 ;   print error message, if not enough arguments are given
     mov     rdi, not_enough_arguments_msg
     xor     rax, rax
-    call    printf
+    mycall  printf
     mov     rdi, 1
     jmp     exit
 
@@ -132,8 +153,9 @@ enough_arguments:
     mov     rdi, [r12+8]
     mov     rsi, end_ptr
     mov     rdx, 10
-    call    strtoull
-    mov     rsi, [end_ptr]
+    mycall  strtoull
+    mov     rsi, end_ptr
+    mov     rsi, [rsi]
     cmp     byte [rsi], 0
     je      conversion_successful
 
@@ -141,10 +163,10 @@ enough_arguments:
     mov     rdi, invalid_argument_msg
     mov     rsi, [r12+8]
     xor     rax, rax
-    call    printf
+    mycall  printf
     mov     rdi, only_digits_msg
     xor     rax, rax
-    call    printf
+    mycall  printf
     mov     rdi, 1
     jmp     exit
 
@@ -166,16 +188,16 @@ invalid_operation:
     mov     rdi, invalid_argument_msg
     mov     rsi, [r12+16]
     xor     rax, rax
-    call    printf
+    mycall  printf
     mov     rdi, allowed_operations_msg
     xor     rax, rax
-    call    printf
+    mycall  printf
     mov     rdi, 1
     jmp     exit
 
 valid_operation:
 ;   align length
-    mov     [given_len], r13    ;save given length
+    mov_to  given_len, r13    ;save given length
     mov     rax, r13
     xor     rdx, rdx
     mov     rcx, 4
@@ -184,7 +206,7 @@ valid_operation:
     add     r13, rcx
 
     mov     rdi, 0
-    call    time
+    mycall  time
     mov     rdi, rax
     call    srand
 
