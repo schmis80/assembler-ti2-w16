@@ -27,7 +27,6 @@ section .data
     err_not_enough_msg:
         db      RED,"Not enough Arguments",10,RESET,\
                 "Usage: ./gauss <number>",10,0
-
 section .text
 
 extern strtoul, printf, gauss
@@ -41,8 +40,7 @@ main:
     mov     rdi, [r12+8]        ;get passed argument
     mov     rsi, end_ptr
     mov     rdx, 10             ;base to convert to
-    mov     rax, strtoul
-    call    rax                 ;result in rax and rsi, endptr in rdi 
+    call    strtoul wrt ..plt   ;result in rax and rsi, endptr in rdi 
     mov     rsi, end_ptr
     mov     rsi, [rsi]
     cmp     byte [rsi], 0       ;test if conversion was successfull
@@ -54,8 +52,7 @@ main:
     pop     rsi
     mov     rdi, result_msg
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
+    call    printf wrt ..plt
     xor     rax, rax            ;program was successful
     jmp     exit
     
@@ -69,8 +66,7 @@ err_invalid:
 
 print_error:
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
+    call    printf wrt ..plt
     mov     rax, 1              ;program was not successful
 
 exit:
