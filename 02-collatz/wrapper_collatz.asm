@@ -43,8 +43,7 @@ main:
     mov     rdi, [r12+8]        ;get passed argument
     mov     rsi, end_ptr
     mov     rdx, 10             ;base to convert to
-    mov     rax, strtoul
-    call    rax
+    call    strtoul wrt ..plt
     mov     rdi, end_ptr
     mov     rdi, [rdi]
     cmp     byte [rdi], 0       ;test if conversion was successfull
