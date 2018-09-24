@@ -19,6 +19,36 @@
 %define BOLD	27,"[1m"
 %define RESET	27,"[0m"
 
+%macro MY_CALL 1
+    push    r15
+    mov     r15, %1
+    call    r15
+    pop     r15
+%endmacro
+
+%macro cmp_at 2
+    push    r15
+    mov     r15, %1
+    mov     r15, [r15]
+    cmp     byte [r15], %2
+    pop     r15
+%endmacro
+
+%macro multipush 1-*
+    %rep %0
+        push    %1
+    %rotate 1
+    %endrep
+%endmacro
+
+%macro multipop 1-*
+    %rep %0
+    %rotate -1
+        pop    %1
+    %endrep
+%endmacro
+
+
 section .bss
     end_ptr:    resq    1
 
@@ -27,15 +57,11 @@ section .data
         db  BOLD,RED,"Not enough arguments!",10,RESET,\
             "Usage: ./hofs <len> <op>",10,0
     invalid_argument_msg:
-        db  BOLD,RED,"Invalid argument: ",'"',"%s",'"',"!",10,RESET,0
+        db  BOLD,RED,'Invalid argument: "%s"!',10,RESET,0
     only_digits_msg:        
         db  "Only Digits are allowed!",10,0
     allowed_operations_msg:
-        db  "Please insert only ",\
-            42, "+" , 42, ", ",\
-            42, "-" , 42, ", ",\
-            42, "\*", 42, ", ",\
-            " as operation.",10,0
+        db  'Please insert only "+","-","\*", or "/" as operation.',10,0
     rtl_msg:
         db  "fold-rtl:",10,0
     ltr_msg:
@@ -86,11 +112,7 @@ rtl_print:
 ;   prints the array like this:
 ;       1+(2+(3+4))=10
 ;
-    push    r12
-    push    r13
-    push    r14
-    push    r15
-    push    rbx
+    multipush r12, r13, r14, r15, rbx
 
     mov     r12, rdi
     mov     r13, rsi
@@ -100,7 +122,7 @@ rtl_print:
 
     mov     rdi, rtl_msg
     xor     rax, rax
-    call    printf
+    MY_CALL printf
 .loop:
     cmp     r15, r13
     je      .end_loop
@@ -123,7 +145,7 @@ rtl_print:
     mov     rdi, entry_op_msg
     mov     rsi, [r12+8*r15]
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     inc     r15
     jmp     .loop
 
@@ -135,7 +157,7 @@ rtl_print:
     jae     .end_p_loop
     mov     rdi, rtl_p
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     inc     r15
     jmp     .p_loop
 
@@ -143,13 +165,9 @@ rtl_print:
     mov     rdi, fold_res
     mov     rsi, r14
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
 
-    pop     rbx
-    pop     r15
-    pop     r14
-    pop     r13
-    pop     r12
+    multipop r12, r13, r14, r15, rbx
     ret
 
 ltr_print:
@@ -157,11 +175,7 @@ ltr_print:
 ;   prints the array like this:
 ;       1+(2+(3+4))=10
 ;
-    push    r12
-    push    r13
-    push    r14
-    push    r15
-    push    rbx
+    multipush r12, r13, r14, r15, rbx
 
     mov     r12, rdi
     mov     r13, rsi
@@ -170,7 +184,7 @@ ltr_print:
 
     mov     rdi, ltr_msg
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     sub     r13, 2
     xor     r15, r15
 .p_loop:
@@ -178,7 +192,7 @@ ltr_print:
     jae     .end_p_loop
     mov     rdi, ltr_p
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     inc     r15
     jmp     .p_loop
 
@@ -207,7 +221,7 @@ ltr_print:
     mov     rdi, entry_op_msg
     mov     rsi, [r12+8*r15]
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     inc     r15
     jmp     .loop
 
@@ -215,13 +229,9 @@ ltr_print:
     mov     rdi, fold_res
     mov     rsi, r14
     xor     rax, rax
-    call    printf
+    MY_CALL printf
 
-    pop     rbx
-    pop     r15
-    pop     r14
-    pop     r13
-    pop     r12
+    multipop r12, r13, r14, r15, rbx
     ret
 
 zip_print:
@@ -230,10 +240,7 @@ zip_print:
 ;       1 + 3 = 4
 ;       2 + 4 = 6
 ;      
-    push    r12
-    push    r13
-    push    r14
-    push    r15
+    multipush r12, r13, r14, r15
 
     mov     r12, rdi
     mov     r13, rsi
@@ -242,7 +249,7 @@ zip_print:
 
     mov     rdi, zip_msg
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
 
 .loop:
     cmp     r15, r13
@@ -255,15 +262,12 @@ zip_print:
     lea     r9, [r9+8*r13]
     mov     r8, [r9+8*r13]
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     inc     r15
     jmp     .loop
 
 .end_loop:
-    pop     r15
-    pop     r14
-    pop     r13
-    pop     r12
+    multipop r12, r13, r14, r15
     ret
 
 ;   1. Param length of arrays
@@ -275,7 +279,7 @@ main:
 ;   print error message, if not enough arguments are given
     mov     rdi, not_enough_arguments_msg
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     mov     rdi, 1
     jmp     exit
 
@@ -284,18 +288,18 @@ enough_arguments:
     mov     rdi, [r12+8]
     mov     rsi, end_ptr
     mov     rdx, 10
-    call    strtoull
-    cmp     byte [rdi], 0
+    MY_CALL strtoull
+    cmp_at  end_ptr, 0
     je      conversion_successful
 
 ;   print error message, if invalid argument was given
     mov     rdi, invalid_argument_msg
     mov     rsi, [r12+8]
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     mov     rdi, only_digits_msg
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     mov     rdi, 1
     jmp     exit
 
@@ -321,18 +325,18 @@ invalid_operation:
     mov     rdi, invalid_argument_msg
     mov     rsi, [r12+16]
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     mov     rdi, allowed_operations_msg
     xor     rax, rax
-    call    printf
+    MY_CALL    printf
     mov     rdi, 1
     jmp     exit
 
 valid_operation:
     mov     rdi, 0
-    call    time
+    MY_CALL    time
     mov     rdi, rax
-    call    srand
+    MY_CALL    srand
 
     lea     rbx, [2*r13+r13]
     lea     rdi, [8*rbx]
@@ -344,7 +348,7 @@ valid_operation:
 fill_loop:
     cmp     r15, rbx
     je      end_loop
-    call    rand
+    MY_CALL    rand
     xor     rdx, rdx
     mov     rcx, 100
     div     rcx
