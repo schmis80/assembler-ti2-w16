@@ -65,11 +65,10 @@ section .data
     
 section .text
 
-extern calc, time, printf, strtoull
+extern calc, printf, strtoull
 global main
 
 srand:
-    mov_to  rand_next, rdi
     ret
 
 rand_float:
@@ -205,10 +204,8 @@ valid_operation:
     sub     rcx, rdx
     add     r13, rcx
 
-    mov     rdi, 0
-    mycall  time
-    mov     rdi, rax
-    call    srand
+    rdtsc
+    mov_to  rand_next, rax
 
     lea     rdi, [2*r13+r13]
     lea     rdi, [4*rdi]
