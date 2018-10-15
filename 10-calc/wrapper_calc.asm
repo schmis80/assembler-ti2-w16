@@ -12,7 +12,7 @@
 ; Stefan Schmid
 ; 2018/09/14
 
-%define RED		27,"[31m"
+%define RED     27,"[31m"
 %define DEFAULT 27,"[39m"
 
 %define BOLD	27,"[1m"
