@@ -19,17 +19,15 @@
 %define BOLD    27,"[1m"
 %define RESET   27,"[0m"
 
-%macro mycall 1
-    push    r15
-    mov     r15, %1
-    call    r15
-    pop     r15
-%endmacro
+section .bss
+end_ptr     resq    1
 
 section .data
 not_enough_arguments_msg:
     db  RED , BOLD, "Not enough arguments!", 10, RESET,\
         "Usage: ./sort <len>", 10, 0
+invalid_argument_msg:
+    db  RED, BOLD, "Invalid argument: ", RESET,"%s",10,0
 head_msg:
 	db  "Array: %2lu",0
 elem_msg:
@@ -42,92 +40,105 @@ extern strtoul, time, srand, rand, printf, sort
 global main
 
 main:
-	push    r12
-	push    r13
-	push    r14
-	push    r15
+    push    r12
+    push    r13
+    push    r14
+    push    r15
 
     cmp     rdi, 2
     je      enough_arguments
 ;   print error message if not enough arguments
     mov     rdi, not_enough_arguments_msg
     xor     rax, rax
-    mycall  printf
+    call    printf
     mov     rax, 1
     jmp     exit
 
 enough_arguments:
-	mov     rdi, [rsi+8]    ;get argument
-	mov     rdx, 10
-	mycall  strtoul         ;convert argument to integer
-	mov     r13, rax        ;len
-	lea     r12, [r13*8]
+    mov     r12, rsi
+    mov     rdi, [r12+8]    ;get argument
+    mov     rsi, end_ptr
+    mov     rdx, 10
+    call    strtoul         ;convert argument to integer
+    mov     rdi, [end_ptr]
+    cmp     byte [rdi], 0
+    je      valid_argument
+    mov     rdi, invalid_argument_msg
+    mov     rsi, [r12+8]
+    xor     rax, rax
+    call    printf
+    mov     rax, 1
+    jmp     exit
+
+valid_argument:
+    mov     r13, rax        ;len
+    lea     r12, [r13*8]
 	
 array:
     mov     rdi, 0
-    mycall  time
+    call    time
     mov     rdi, rax
-    mycall  srand
+    call    srand
 
-	push    rbp             ;enter stackframe
-	mov     rbp, rsp
-	sub     rsp, r12        ;reserve space for n 64 bit integers
+    push    rbp             ;enter stackframe
+    mov     rbp, rsp
+    sub     rsp, r12        ;reserve space for n 64 bit integers
     xor     r12, r12
     mov     r14, 100
 .loop:
-	cmp     r12, r13
-	je      .end_loop
-	mycall  rand
+    cmp     r12, r13
+    je      .end_loop
+    call  rand
     xor     rdx, rdx
     div     r14
-	mov     [rsp+r12*8], rdx	
-	inc     r12
-	jmp     .loop
+    mov     [rsp+r12*8], rdx	
+    inc     r12
+    jmp     .loop
 .end_loop:
-	mov     rdi, r13
+    mov     rdi, r13
     mov     r14, rsp
-	call    printArray      ;print unsorted array
+    call    printArray      ;print unsorted array
 
-	mov     rsi, rsp
-	mov     rdi, r13
-	call    sort
-	call    printArray      ;print sorted array
+    mov     rsi, rsp
+    mov     rdi, r13
+    call    sort
+    call    printArray      ;print sorted array
 	
-	mov     rsp, rbp        ;leave stackframe
-	pop     rbp
+    mov     rsp, rbp        ;leave stackframe
+    pop     rbp
 	
     xor     rax, rax
 exit:
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	ret
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    ret
 	
 
 printArray:
-	mov     rdi, head_msg
-	mov     rsi, [r14]
-	xor     rax, rax
-	mycall  printf			;print head of array
-	mov     r12, 1
+    mov     rdi, head_msg
+    mov     rsi, [r14]
+    xor     rax, rax
+    call  printf			;print head of array
+    mov     r12, 1
 .loop:						;print inner elements of array
-	cmp     r12, r13
-	je      .end_loop
+    cmp     r12, r13
+    je      .end_loop
     mov     rdx, 10         ;for last element add newline to string
     lea     r8, [r13-1]
     cmp     r12, r8
     je      .print
     xor     rdx, rdx        ;end the string directly after the integer
 .print:
-	mov     rdi, elem_msg
-	mov     rsi, [r14+r12*8]
-	mov     rax, 0
-	mycall  printf	
+    mov     rdi, elem_msg
+    mov     rsi, [r14+r12*8]
+    mov     rax, 0
+    call  printf	
     inc     r12
-	jmp     .loop
+    jmp     .loop
 .end_loop:
-	ret
+    ret
 	
 	
 	

@@ -17,9 +17,6 @@
 %define OP2     rsp+0x18
 %define RESULT  rsp+0x28
 
-%define STRTOF  r14
-%define PRINTF  r15
-
 section .data
     result_msg:         
         db      "%f",9,"%c",9,"%f",9,"=",9,"%f",10,0
@@ -45,7 +42,7 @@ main:
 ;   convert first argument
     mov     rdi, [r12+8]
     mov     rsi, END_PTR
-    call    STRTOF
+    call    strtof
     mov     rdi, [END_PTR]
     cmp     byte [rdi], 0
     jne     err_invalid
@@ -54,7 +51,7 @@ main:
     inc     r13
     mov     rdi, [r12+16]
     mov     rsi, END_PTR
-    call    STRTOF
+    call    strtof
     mov     rdi, [END_PTR]
     cmp     byte [rdi], 0
     jne     err_invalid
@@ -71,7 +68,7 @@ main:
     mov     rdi, result_msg
     mov     rsi, '+'
     mov     rax, 2
-    call    PRINTF
+    call    printf
     movsd   xmm0, [OP1]
     movsd   xmm1, [OP2]
     lea     rdi, [RESULT]
@@ -83,8 +80,8 @@ main:
     mov     rdi, result_msg
     mov     rsi, '-'
     mov     rax, 2
-    call    PRINTF
-    xor     rdi, rdi            ;program was successful
+    call    printf
+    xor     rax, rax            ;program was successful
     jmp     exit
     
 err_not_enough:
@@ -97,10 +94,9 @@ err_invalid:
 
 print_error:
     xor     rax, rax
-    call    PRINTF
-    mov     rdi, 1              ;program was not successful
+    call    printf
+    mov     rax, 1              ;program was not successful
 
 exit:
     add     rsp, 0x38
-    mov     rax, 60
-    syscall
+    ret

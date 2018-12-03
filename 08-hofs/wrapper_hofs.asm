@@ -19,17 +19,9 @@
 %define BOLD	27,"[1m"
 %define RESET	27,"[0m"
 
-%macro MY_CALL 1
-    push    r15
-    mov     r15, %1
-    call    r15
-    pop     r15
-%endmacro
-
 %macro cmp_at 2
     push    r15
-    mov     r15, %1
-    mov     r15, [r15]
+    mov     r15, [%1]
     cmp     byte [r15], %2
     pop     r15
 %endmacro
@@ -122,7 +114,7 @@ rtl_print:
 
     mov     rdi, rtl_msg
     xor     rax, rax
-    MY_CALL printf
+    call    printf
 .loop:
     cmp     r15, r13
     je      .end_loop
@@ -145,7 +137,7 @@ rtl_print:
     mov     rdi, entry_op_msg
     mov     rsi, [r12+8*r15]
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     inc     r15
     jmp     .loop
 
@@ -157,7 +149,7 @@ rtl_print:
     jae     .end_p_loop
     mov     rdi, rtl_p
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     inc     r15
     jmp     .p_loop
 
@@ -165,7 +157,7 @@ rtl_print:
     mov     rdi, fold_res
     mov     rsi, r14
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
 
     multipop r12, r13, r14, r15, rbx
     ret
@@ -184,7 +176,7 @@ ltr_print:
 
     mov     rdi, ltr_msg
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     sub     r13, 2
     xor     r15, r15
 .p_loop:
@@ -192,7 +184,7 @@ ltr_print:
     jae     .end_p_loop
     mov     rdi, ltr_p
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     inc     r15
     jmp     .p_loop
 
@@ -221,7 +213,7 @@ ltr_print:
     mov     rdi, entry_op_msg
     mov     rsi, [r12+8*r15]
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     inc     r15
     jmp     .loop
 
@@ -229,7 +221,7 @@ ltr_print:
     mov     rdi, fold_res
     mov     rsi, r14
     xor     rax, rax
-    MY_CALL printf
+    call printf
 
     multipop r12, r13, r14, r15, rbx
     ret
@@ -249,7 +241,7 @@ zip_print:
 
     mov     rdi, zip_msg
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
 
 .loop:
     cmp     r15, r13
@@ -262,7 +254,7 @@ zip_print:
     lea     r9, [r9+8*r13]
     mov     r8, [r9+8*r13]
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     inc     r15
     jmp     .loop
 
@@ -279,8 +271,8 @@ main:
 ;   print error message, if not enough arguments are given
     mov     rdi, not_enough_arguments_msg
     xor     rax, rax
-    MY_CALL    printf
-    mov     rdi, 1
+    call    printf
+    mov     rax, 1
     jmp     exit
 
 enough_arguments:
@@ -288,7 +280,7 @@ enough_arguments:
     mov     rdi, [r12+8]
     mov     rsi, end_ptr
     mov     rdx, 10
-    MY_CALL strtoull
+    call    strtoull
     cmp_at  end_ptr, 0
     je      conversion_successful
 
@@ -296,11 +288,11 @@ enough_arguments:
     mov     rdi, invalid_argument_msg
     mov     rsi, [r12+8]
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     mov     rdi, only_digits_msg
     xor     rax, rax
-    MY_CALL    printf
-    mov     rdi, 1
+    call    printf
+    mov     rax, 1
     jmp     exit
 
 conversion_successful:
@@ -325,18 +317,18 @@ invalid_operation:
     mov     rdi, invalid_argument_msg
     mov     rsi, [r12+16]
     xor     rax, rax
-    MY_CALL    printf
+    call    printf
     mov     rdi, allowed_operations_msg
     xor     rax, rax
-    MY_CALL    printf
-    mov     rdi, 1
+    call    printf
+    mov     rax, 1
     jmp     exit
 
 valid_operation:
     mov     rdi, 0
-    MY_CALL    time
+    call    time
     mov     rdi, rax
-    MY_CALL    srand
+    call    srand
 
     lea     rbx, [2*r13+r13]
     lea     rdi, [8*rbx]
@@ -348,7 +340,7 @@ valid_operation:
 fill_loop:
     cmp     r15, rbx
     je      end_loop
-    MY_CALL    rand
+    call    rand
     xor     rdx, rdx
     mov     rcx, 100
     div     rcx
@@ -395,10 +387,9 @@ end_loop:
     xor     rdx, rdx
     mov     dl, [r8]  
     call    zip_print
-    xor     rdi, rdi
+    xor     rax, rax
 ;   leave stackframe
     mov     rsp, rbp
     pop     rbp
 exit:   
-    mov     rax, 60
-    syscall    
+    ret

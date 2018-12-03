@@ -12,6 +12,9 @@
 ; Stefan Schmid
 ; 2018/08/21
 
+section .bss
+end_ptr:    resq    1
+
 section .data
     result_msg:         
         db      "Integer: %d_%s",10,"Length: %u",10,0
@@ -26,33 +29,33 @@ extern strToInt, printf
 global main
 
 main:
-    sub     rsp, 8          ;reserve space for end_ptr
     cmp     rdi, 3
     jb      err_not_enough
     mov     r12, rsi
-    mov     rdi, [r12+16]   ;get second passed argument
-    mov     rsi, rsp
+    add     r12, 16
+    mov     rdi, [r12]   ;get second passed argument
+    mov     rsi, end_ptr
     mov     rdx, 10         ;base to convert to
     call    strToInt
-    mov     rdi, [rsp]
+    mov     rdi, [end_ptr]
     cmp     byte [rdi], 0   ;test if conversion was successfull
     jne     err_invalid
-    mov     rdi, [r12+8]
-    mov     rsi, rsp
+    sub     r12, 8
+    mov     rdi, [r12]
+    mov     rsi, end_ptr
     mov     rdx, rax
     call    strToInt
-    mov     rdi, [rsp]
+    mov     rdi, [end_ptr]
     cmp     byte [rdi], 0
     jne     err_invalid
-    sub     rdi, [r12+8]
+    sub     rdi, [r12]
     mov     rcx, rdi
     mov     rdi, result_msg
     mov     rsi, rax
-    mov     rdx, [r12+16]
+    mov     rdx, [r12+8]
     xor     rax, rax
-    mov     r8, printf
-    call    r8
-    xor     rdi, rdi        ;program was successful
+    call    printf
+    xor     rax, rax        ;program was successful
     jmp     exit
     
 err_not_enough:
@@ -65,11 +68,8 @@ err_invalid:
 
 print_error:
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
-    mov     rdi, 1              ;program was not successful
+    call    printf
+    mov     rax, 1              ;program was not successful
 
 exit:
-    add     rsp, 8          ;restore stackpointer
-    mov     rax, 60
-    syscall
+    ret

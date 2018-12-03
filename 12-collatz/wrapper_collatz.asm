@@ -43,10 +43,8 @@ main:
     mov     rdi, [r12+8]        ;get passed argument
     mov     rsi, end_ptr
     mov     rdx, 10             ;base to convert to
-    mov     rax, strtoul
-    call    rax
-    mov     rdi, end_ptr
-    mov     rdi, [rdi]
+    call    strtoul wrt ..plt
+    mov     rdi, [end_ptr]
     cmp     byte [rdi], 0       ;test if conversion was successfull
     jne     err_invalid
     push    rax
@@ -56,8 +54,7 @@ main:
     pop     rsi
     mov     rdx, rax
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
+    call    printf
     xor     rdi, rdi            ;program was successful
     jmp     exit
     
@@ -71,8 +68,7 @@ err_invalid:
 
 print_error:
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
+    call    printf
     mov     rdi, 1              ;program was not successful
 
 exit:

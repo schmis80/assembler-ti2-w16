@@ -47,8 +47,7 @@ conversion:
     mov     rdx, 10
     mov     rax, strtol
     call    rax
-    mov     rdi, end_ptr
-    mov     rdi, [rdi]
+    mov     rdi, [end_ptr]
     cmp     byte [rdi], 0
     jne     err_invalid
     mov     dword [rsp+r13*4-4], eax   ;save parameter in array
@@ -74,9 +73,8 @@ conversion:
     mov     rdi, result_msg
     mov     rsi, rax
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
-    xor     rdi, rdi            ;program was successful
+    call    printf
+    xor     rax, rax            ;program was successful
     jmp     exit
     
 err_not_enough:
@@ -84,15 +82,14 @@ err_not_enough:
     jmp     print_error
 
 err_invalid:
+    leave
     mov     rsi, [r12+r13*8]    ;char that made conversion fail
     mov     rdi, err_invalid_msg
 
 print_error:
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
-    mov     rdi, 1              ;program was not successful
+    call    printf
+    mov     rax, 1              ;program was not successful
 
 exit:
-    mov     rax, 60
-    syscall
+    ret

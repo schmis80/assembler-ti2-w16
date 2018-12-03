@@ -38,10 +38,8 @@ main:
 conversion:
     mov     rdi, [r12+r13*8]
     mov     rsi, end_ptr
-    mov     rax, strtod
-    call    rax
-    mov     rdi, end_ptr
-    mov     rdi, [rdi]
+    call    strtod
+    mov     rdi, [end_ptr]
     cmp     byte [rdi], 0
     jne     err_invalid
     lea     rsi, [r13*8]
@@ -49,6 +47,7 @@ conversion:
     inc     r13
     cmp     r13, 8
     jbe     conversion
+break:
     movsd   xmm0, [rsp]
     movsd   xmm1, [rsp+16]
     movsd   xmm2, [rsp+32]
@@ -61,9 +60,8 @@ conversion:
     call    formula
     mov     rdi, result_msg
     mov     rax, 2
-    mov     rcx, printf
-    call    rcx
-    xor     rdi, rdi            ;program was successful
+    call    printf
+    xor     rax, rax            ;program was successful
     jmp     exit
     
 err_not_enough:
@@ -71,15 +69,15 @@ err_not_enough:
     jmp     print_error
 
 err_invalid:
+    leave
     mov     rsi, [r12+r13*8]    ;char that made conversion fail
     mov     rdi, err_invalid_msg
 
 print_error:
     xor     rax, rax
-    mov     rcx, printf
-    call    rcx
-    mov     rdi, 1              ;program was not successful
+    call    printf
+    mov     rax, 1              ;program was not successful
 
 exit:
-    mov     rax, 60
-    syscall
+    add     rsp, 8
+    ret
